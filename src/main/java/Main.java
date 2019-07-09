@@ -1,36 +1,20 @@
-import org.jooq.*;
-import org.jooq.impl.DSL;
-import org.jooq.sources.tables.Mytable;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.HashMap;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import guice.ConfigModule;
+import guice.Man;
+import guice.ManService;
 
 public class Main {
 
     public static void main(String[] args) {
+        Injector injector = Guice.createInjector(new ConfigModule());
+        ManService manService = injector.getInstance(ManService.class);
 
-        String user = "postgres";
-        String password = "postgres";
+        Man man = new Man();
+        man.setId(3);
+        man.setName("alex");
 
-        String url = "jdbc:postgresql://localhost:5432/postgres";
-
-        try (Connection connection = DriverManager.getConnection(url, user, password)) {
-            DSLContext dsl = DSL.using(connection, SQLDialect.POSTGRES);
-            Result<Record> sam = dsl.select().from(Mytable.MYTABLE).where(Mytable.MYTABLE.NAME.eq("sam")).fetch();
-
-            HashMap<Integer, String> map = new HashMap<>();
-            for (Record r: sam) {
-                Integer id= r.getValue(Mytable.MYTABLE.ID);
-                String name = r.getValue(Mytable.MYTABLE.NAME);
-                map.put(id, name);
-
-            }
-            System.out.println(map.get(1));
-
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        manService.save(man);
+        manService.getManById(3);
     }
 }
